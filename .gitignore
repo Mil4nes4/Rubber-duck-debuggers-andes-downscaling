@@ -4,6 +4,18 @@ data/*
 *.npz
 *.csv
 
+# Excepción: relieve y coordenadas para el producto (archivo pequeño)
+!app/static.npz
+
+# Descargas de datos
+*.zip
+
+# Pesos de experimentos: solo se versiona el modelo final
+*.pt
+*.pth
+*.ckpt
+!models/modelo_final.pt
+
 # Caché del GFS y salidas del producto
 gfs_cache.npz
 salidas/
@@ -18,3 +30,9 @@ venv/
 # Claves y entorno
 .env
 kaggle.json
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
