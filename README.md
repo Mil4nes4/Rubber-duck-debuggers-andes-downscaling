@@ -8,6 +8,11 @@ Convierte el pronóstico global del clima (GFS, ~27 km) en mapas de alta resoluc
 
 Este repositorio es la **plantilla de tu equipo**: tiene la estructura, el starter del modelo y un ejemplo de producto que ya corre. Las reglas completas están en las **bases** y el detalle de cómo participar, en la **Guía del participante**. Si hay una contradicción, prevalecen las bases.
 
+## Documentos del equipo
+
+- `CONTRIBUTING.md`: configuración del entorno y reglas de trabajo (leer antes de empezar)
+- `RESULTADOS.md`: registro de experimentos y scores
+
 ## 0. Crea el repositorio de tu equipo
 
 1. Arriba a la derecha, haz clic en **Use this template → Create a new repository**.
