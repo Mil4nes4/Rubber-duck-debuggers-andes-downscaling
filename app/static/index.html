@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipo pronóstico 3 km</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f6f7f9; color: #1d2330; }
+  .banda { background: #fff3cd; border: 1px solid #e0c36a; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; }
+  .fila { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .panel { background: #fff; border: 1px solid #dde1e7; border-radius: 8px; padding: 12px; }
+  canvas { image-rendering: pixelated; border: 1px solid #ccc; display: block; }
+  label, select, input { font-size: 14px; }
+  table { border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 3px 8px; border-bottom: 1px solid #eee; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  tr.sel { background: #e7f0ff; }
+  .tabla { max-height: 560px; overflow-y: auto; }
+  .muted { color: #667; font-size: 12px; }
+  #leyenda { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 6px; }
+  #barra { width: 180px; height: 10px; }
+</style>
+</head>
+<body>
+<div class="banda"><b>PROTOTIPO TÉCNICO.</b> No usar para decisiones reales. Mapas 3 km generados con el modelo a partir del GFS de Open-Meteo. <span id="aviso"></span></div>
+<h2 style="margin:4px 0 10px">Cordillera Blanca: pronóstico por hora (hora de Perú, UTC-5)</h2>
+<div class="fila">
+  <div class="panel">
+    <label>Variable
+      <select id="var">
+        <option value="T_C">Temperatura (°C)</option>
+        <option value="viento_ms">Rapidez del viento (m/s)</option>
+        <option value="RH">Humedad relativa (%)</option>
+      </select>
+    </label>
+    <div style="margin:8px 0">
+      <input id="hora" type="range" min="0" max="0" value="0" style="width:280px">
+      <div id="horaTxt" class="muted"></div>
+    </div>
+    <canvas id="mapa" width="35" height="70" style="width:280px;height:560px"></canvas>
+    <div id="leyenda"><span id="vmin"></span><canvas id="barra" width="180" height="10"></canvas><span id="vmax"></span></div>
+    <div id="punto" class="muted">Pasa el cursor sobre el mapa para ver el valor.</div>
+  </div>
+  <div class="panel">
+    <b>Resumen del dominio por hora</b>
+    <div class="muted" id="meta"></div>
+    <div class="tabla"><table id="tabla"><thead><tr>
+      <th>Hora Perú</th><th>T media</th><th>T mín</th><th>T máx</th><th>RH media</th><th>Viento medio</th><th>Viento máx</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let resumen = [], actual = null;
+
+function color(t, varName) {            // t en [0,1]
+  if (varName === "T_C") {              // azul -> blanco -> rojo
+    const r = t < .5 ? 2 * t : 1, b = t < .5 ? 1 : 2 * (1 - t), g = 1 - Math.abs(t - .5) * 2;
+    return [255 * r, 255 * (0.3 + 0.7 * g), 255 * b];
+  }
+  if (varName === "RH") return [255 * (1 - t), 255 * (1 - 0.5 * t), 255];
+  return [255, 255 * (1 - t), 255 * (1 - t) * 0.6];   // viento: blanco -> rojo
+}
+
+function dibujar() {
+  if (!actual) return;
+  const v = $("var").value, G = actual[v];
+  const flat = G.flat(), lo = Math.min(...flat), hi = Math.max(...flat);
+  const ctx = $("mapa").getContext("2d"), img = ctx.createImageData(35, 70);
+  for (let r = 0; r < 70; r++) for (let c = 0; c < 35; c++) {
+    const [R, Gc, B] = color((G[r][c] - lo) / ((hi - lo) || 1), v);
+    const k = ((69 - r) * 35 + c) * 4;   // fila 0 = sur -> abajo del canvas
+    img.data.set([R, Gc, B, 255], k);
+  }
+  ctx.putImageData(img, 0, 0);
+  const bc = $("barra").getContext("2d");
+  for (let x = 0; x < 180; x++) { const [R, Gc, B] = color(x / 179, v); bc.fillStyle = `rgb(${R},${Gc},${B})`; bc.fillRect(x, 0, 1, 10); }
+  $("vmin").textContent = lo.toFixed(1); $("vmax").textContent = hi.toFixed(1);
+}
+
+async function cargarMapa(i) {
+  const r = await fetch(`/mapa?hora=${i}`); actual = await r.json();
+  $("horaTxt").textContent = `${actual.hora_peru} hora de Perú (${actual.hora_utc} UTC)`;
+  document.querySelectorAll("#tabla tbody tr").forEach((tr, k) => tr.classList.toggle("sel", k == i));
+  dibujar();
+}
+
+$("mapa").addEventListener("mousemove", e => {
+  if (!actual) return;
+  const b = e.target.getBoundingClientRect();
+  const c = Math.floor((e.clientX - b.left) / b.width * 35), r = 69 - Math.floor((e.clientY - b.top) / b.height * 70);
+  if (r < 0 || r > 69 || c < 0 || c > 34) return;
+  $("punto").textContent = `lat ${actual.lats[r].toFixed(3)}, lon ${actual.lons[c].toFixed(3)}: ` +
+    `T ${actual.T_C[r][c]} °C, RH ${actual.RH[r][c]} %, viento ${actual.viento_ms[r][c]} m/s`;
+});
+$("var").onchange = dibujar;
+$("hora").oninput = e => cargarMapa(e.target.value);
+
+(async () => {
+  const p = await (await fetch("/pronostico")).json();
+  resumen = p.horas;
+  $("aviso").textContent = `Modelo: ${p.modelo}. ${p.avisos.join(" ")}`;
+  $("meta").textContent = `GFS descargado ${p.gfs.descargado} (${p.gfs.origen}). ${resumen.length} horas.`;
+  $("tabla").querySelector("tbody").innerHTML = resumen.map((h, i) =>
+    `<tr data-i="${i}"><td>${h.hora_peru}</td><td>${h.T_C.media}</td><td>${h.T_C.min}</td><td>${h.T_C.max}</td>` +
+    `<td>${h.RH.media}</td><td>${h.viento_ms.media}</td><td>${h.viento_ms.max}</td></tr>`).join("");
+  document.querySelectorAll("#tabla tbody tr").forEach(tr => tr.onclick = () => { $("hora").value = tr.dataset.i; cargarMapa(tr.dataset.i); });
+  $("hora").max = resumen.length - 1;
+  cargarMapa(0);
+})();
+</script>
+</body>
+</html>
