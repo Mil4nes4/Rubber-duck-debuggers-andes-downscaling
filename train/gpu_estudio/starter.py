@@ -16,6 +16,7 @@ from ridge import CUTS, REF
 
 
 ROOT = Path(__file__).resolve().parent
+DATA = ROOT.parent.parent / "data"  # data/ en la raíz del repo
 RESULTS = ROOT / "results" / "starter"
 DEV = "cuda" if torch.cuda.is_available() else "cpu"
 SEEDS = (0, 37, 73)
@@ -334,7 +335,7 @@ def main():
     torch.set_num_interop_threads(1)
     log(f"Inicio starter completo. Torch={torch.__version__} hilos={args.hilos}")
     try:
-        data = Data(ROOT / "data")
+        data = Data(DATA)
         for seed in ([args.semilla] if args.semilla is not None else SEEDS):
             for cut in ([args.corte] if args.corte else CUTS):
                 run(data, cut, seed, deadline)

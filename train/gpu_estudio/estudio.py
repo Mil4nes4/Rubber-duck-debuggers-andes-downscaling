@@ -72,7 +72,7 @@ def prepare_linear(cuts, deadline):
     if all((RESULTS / cut / "lineal_validacion.pt").exists() and
            (RESULTS / cut / "lineal.json").exists() for cut in cuts):
         return
-    data = ridge.Dataset(s.ROOT / "data")
+    data = ridge.Dataset(s.DATA)
     for cut in cuts:
         residual.prepare_cut(data, cut, deadline, False)
 
@@ -95,7 +95,7 @@ def final_fit(data, deadline):
     checkpoint = s.fit(data, folder, rows, s.SEEDS[0], deadline, name)
     if best.startswith("ensamble_"):
         deadline()
-        checkpoint["lineal"] = ridge.fit(ridge.Dataset(s.ROOT / "data"), rows)
+        checkpoint["lineal"] = ridge.fit(ridge.Dataset(s.DATA), rows)
         checkpoint["peso_cnn"] = CNN_WEIGHT
     s.save(checkpoint, folder / "modelo.pt")
     s.read(folder / "modelo.pt")
@@ -132,7 +132,7 @@ def main():
     seeds = [args.semilla] if args.semilla is not None else s.SEEDS
     status = None
     try:
-        data = s.Data(s.ROOT / "data")
+        data = s.Data(s.DATA)
         if args.experimento != "lineal":
             for seed in seeds:
                 for cut in cuts:

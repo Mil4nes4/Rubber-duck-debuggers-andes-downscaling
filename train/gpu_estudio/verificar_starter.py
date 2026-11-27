@@ -13,7 +13,7 @@ def verify():
     torch.set_num_threads(1)
     file = s.ROOT.parent / "Rubber-duck-debuggers-andes-downscaling" / "train" / "starter_notebook.ipynb"
     notebook = json.loads(file.read_text(encoding="utf-8"))
-    data = s.Data(s.ROOT / "data")
+    data = s.Data(s.DATA)
     train, val = data.split("may16")
     stats = data.stats(train[:240], {})
     sample = val[:32]

@@ -7,9 +7,14 @@ pandas==3.1.1
 matplotlib==3.11.2
 requests==2.34.2
 
-# torch: en el .venv está la build CPU (2.15.0+cpu). Esta línea instala la build por defecto de PyPI.
-# Para forzar CPU: pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
-torch==2.15.0
+# torch: NO se instala desde este archivo, para que `pip install -r` no pise la build con CUDA.
+# Instálalo antes, según el equipo (probado en Python 3.12 y Windows):
+#   GPU NVIDIA:  pip install torch --index-url https://download.pytorch.org/whl/cu130
+#                (probado: torch 2.14.1+cu130 en una GTX 1660 Ti; para otra GPU o driver, elige el
+#                 índice cuXXX en https://pytorch.org/get-started/locally/)
+#   Solo CPU:    pip install torch --index-url https://download.pytorch.org/whl/cpu
+# Comprobación: python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+# En Kaggle y Colab torch ya viene instalado.
 
 # Para ejecutar el notebook localmente (no hace falta en Kaggle ni Colab)
 ipykernel==7.4.0

@@ -13,6 +13,7 @@ from informe import publish
 
 
 ROOT = Path(__file__).resolve().parent
+DATA = ROOT.parent.parent / "data"  # data/ en la raíz del repo
 RESULTS = ROOT / "results"
 EXPERIMENTS = {
     "mse": ("mse", False),
@@ -181,7 +182,7 @@ def main():
     configs = list(EXPERIMENTS) if args.experimento == "todos" else [args.experimento]
     seeds = [args.semilla] if args.semilla is not None else SEEDS
     try:
-        data = ridge.Dataset(ROOT / "data")
+        data = ridge.Dataset(DATA)
         for cut in cuts:
             prepare_cut(data, cut, deadline, False)
         if args.experimento != "lineal":

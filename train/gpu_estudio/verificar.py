@@ -35,7 +35,7 @@ def verify_ridge():
 
 
 def verify_dataset():
-    data = ridge.Dataset(Path(__file__).resolve().parent / "data")
+    data = ridge.Dataset(Path(__file__).resolve().parents[2] / "data")
     for cut in ridge.CUTS:
         train, dev, internal, val = ridge.split(data, cut)
         assert train[-1] < val[0]

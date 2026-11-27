@@ -7,7 +7,7 @@ import numpy as np, torch
 import torch.nn.functional as F
 import starter as S
 
-DATA = Path(__file__).resolve().parent / "data"
+DATA = S.DATA
 data = S.Data(DATA)
 train, val = data.split("2024061600")  if "2024061600" in S.CUTS else data.split(list(S.CUTS)[-1])
 print("cortes:", list(S.CUTS), "train", len(train), flush=True)

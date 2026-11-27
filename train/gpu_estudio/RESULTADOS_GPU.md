@@ -40,7 +40,7 @@ La columna Δ es la diferencia con el starter de la misma semilla y corte. La co
 
 ## Cómo reproducir
 
-Entorno con PyTorch (CUDA opcional; sin GPU corre en CPU, unas 20 veces más lento) y `data/` con `train.npz` y `static.npz` dentro de esta carpeta.
+Entorno con PyTorch (CUDA opcional; sin GPU corre en CPU, unas 20 veces más lento) y `train.npz`, `test.npz` y `static.npz` en la carpeta `data/` de la raíz del repositorio (ver `data/README.md`). Para instalar torch con CUDA y el resto de dependencias, ver `requirements_propuesto.txt`. Los scripts se ejecutan desde `train/gpu_estudio/`.
 
 ```
 python run_gpu.py --experimento todos --hilos 4 --horas 5
